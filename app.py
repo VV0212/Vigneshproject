@@ -9,86 +9,65 @@ st.title("🌍 Sustainability Prediction Dashboard")
 
 # ---------------- LOAD DATA ----------------
 url = "https://raw.githubusercontent.com/VV0212/Vigneshproject/main/data.csv"
-
 df = pd.read_csv(url)
 
-# ---------------- CLEAN COLUMNS ----------------
-df.columns = df.columns.str.strip().str.lower()
+# ---------------- CHECK REQUIRED COLUMNS ----------------
+required_cols = ["datetime", "energy_pred", "water_pred", "ghg_pred"]
 
-# ---------------- HANDLE DATETIME ----------------
-if "datetime" in df.columns:
-    df["date"] = pd.to_datetime(df["datetime"], errors="coerce")
-elif "date" in df.columns:
-    df["date"] = pd.to_datetime(df["date"], errors="coerce")
-else:
-    st.error(f"No datetime column found. Columns: {df.columns}")
+missing = [col for col in required_cols if col not in df.columns]
+
+if missing:
+    st.error(f"Missing columns: {missing}")
     st.stop()
 
-# ---------------- CHECK PREDICTIONS ----------------
-required_cols = ["energy_pred", "water_pred"]
+# ---------------- CLEAN DATA ----------------
+df["datetime"] = pd.to_datetime(df["datetime"])
+df = df.sort_values("datetime")
 
-for col in required_cols:
-    if col not in df.columns:
-        st.error(f"Missing column: {col}")
-        st.write("Available columns:", df.columns)
-        st.stop()
-
-# ---------------- PREPARE DATA ----------------
-df["energy"] = df["energy_pred"]
-df["water"] = df["water_pred"]
-
-# ---------------- GHG ----------------
-EMISSION_FACTOR = 0.48
-df["ghg"] = df["energy"] * EMISSION_FACTOR
-
-# ---------------- FILTER ----------------
+# ---------------- SIDEBAR FILTER ----------------
 st.sidebar.header("Filter")
 
-start_date = st.sidebar.date_input("Start Date", df["date"].min())
-end_date = st.sidebar.date_input("End Date", df["date"].max())
+start_date = st.sidebar.date_input("Start Date", df["datetime"].min())
+end_date = st.sidebar.date_input("End Date", df["datetime"].max())
 
-filtered_df = df[
-    (df["date"] >= pd.to_datetime(start_date)) &
-    (df["date"] <= pd.to_datetime(end_date))
+df = df[
+    (df["datetime"].dt.date >= start_date) &
+    (df["datetime"].dt.date <= end_date)
 ]
 
-if filtered_df.empty:
-    st.warning("No data available")
-    st.stop()
+# ---------------- KPIs ----------------
+col1, col2, col3, col4 = st.columns(4)
 
-# ---------------- KPI ----------------
-latest = filtered_df.iloc[-1]
+col1.metric("Energy (kWh)", f"{df['energy_pred'].mean():.2f}")
+col2.metric("Water (m³)", f"{df['water_pred'].mean():.2f}")
+col3.metric("GHG (kg CO2)", f"{df['ghg_pred'].mean():.2f}")
+col4.metric("GHG Intensity", "0.480")
 
-energy_val = latest["energy"]
-water_val = latest["water"]
-ghg_val = latest["ghg"]
+st.markdown("---")
 
-energy_intensity = energy_val / water_val if water_val != 0 else 0
-ghg_intensity = ghg_val / energy_val if energy_val != 0 else 0
+# ---------------- SMOOTH DATA ----------------
+df["energy_smooth"] = df["energy_pred"].rolling(10).mean()
+df["water_smooth"] = df["water_pred"].rolling(10).mean()
+df["ghg_smooth"] = df["ghg_pred"].rolling(10).mean()
 
-col1, col2, col3 = st.columns(3)
+# ---------------- GRAPHS ----------------
+st.subheader("📈 Trends")
 
-col1.metric("Energy (kWh)", f"{energy_val:.2f}")
-col2.metric("Water (m³)", f"{water_val:.2f}")
-col3.metric("GHG (kg CO2)", f"{ghg_val:.2f}")
-
-col4, col5 = st.columns(2)
-
-col4.metric("Energy Intensity (kWh/m³)", f"{energy_intensity:.3f}")
-col5.metric("GHG Intensity (kg CO2/kWh)", f"{ghg_intensity:.3f}")
-
-# ---------------- CHARTS ----------------
-st.subheader("Trends")
-
-fig1 = px.line(filtered_df, x="date", y="energy", title="Energy Trend")
+# ENERGY
+fig1 = px.line(df, x="datetime", y=["energy_pred", "energy_smooth"],
+               title="Energy Trend")
 st.plotly_chart(fig1, use_container_width=True)
 
-fig2 = px.line(filtered_df, x="date", y="water", title="Water Trend")
+# WATER
+fig2 = px.line(df, x="datetime", y=["water_pred", "water_smooth"],
+               title="Water Trend")
 st.plotly_chart(fig2, use_container_width=True)
 
-fig3 = px.line(filtered_df, x="date", y="ghg", title="GHG Trend")
+# GHG
+fig3 = px.line(df, x="datetime", y=["ghg_pred", "ghg_smooth"],
+               title="GHG Trend")
 st.plotly_chart(fig3, use_container_width=True)
 
 # ---------------- TABLE ----------------
-st.subheader("Data Preview")
-st.dataframe(filtered_df.tail(20))
+st.subheader("📊 Data Preview")
+st.dataframe(df.tail(20))
