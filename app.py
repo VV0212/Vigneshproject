@@ -12,6 +12,25 @@ st.set_page_config(
 
 st.title("🌍 Sustainability Prediction Dashboard")
 
+# ---------------- LOAD DATA ----------------
+df = pd.read_csv(
+    "https://raw.githubusercontent.com/VV0212/Vigneshproject/main/data.csv"
+)
+
+# Fix datetime
+df["datetime"] = pd.to_datetime(df["datetime"], errors="coerce")
+
+# Rename columns to match your app
+df = df.rename(columns={
+    "datetime": "Date",
+    "total_energy_kwh": "Energy (kWh)",
+    "volume": "Water (m³)"
+})
+
+# Calculate GHG
+EMISSION_FACTOR = 0.48
+df["GHG (kg CO2)"] = df["Energy (kWh)"] * EMISSION_FACTOR
+
 # ---------------- SIDEBAR FILTER ----------------
 st.sidebar.header("📅 Filters")
 
