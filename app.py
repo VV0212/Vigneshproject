@@ -12,25 +12,6 @@ st.set_page_config(
 
 st.title("🌍 Sustainability Prediction Dashboard")
 
-# ---------------- LOAD DATA ----------------
-energy = np.load("energy_mlp_predictions.npy")
-water = np.load("water_rf_predictions.npy")
-
-# GHG emission factor (you used this earlier)
-EMISSION_FACTOR = 0.48  # kg CO2 per kWh
-
-ghg = energy * EMISSION_FACTOR
-
-# Create date column
-dates = pd.date_range(start="2024-01-01", periods=len(energy))
-
-df = pd.DataFrame({
-    "Date": dates,
-    "Energy (kWh)": energy,
-    "Water (m³)": water,
-    "GHG (kg CO2)": ghg
-})
-
 # ---------------- SIDEBAR FILTER ----------------
 st.sidebar.header("📅 Filters")
 
