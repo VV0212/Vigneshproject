@@ -61,10 +61,10 @@ st.divider()
 # -------------------------
 st.subheader("📈 Prediction Trends")
 
-st.markdown("### ⚡ Energy Prediction (MLP Model)")
+st.markdown("### ⚡ Energy Prediction")
 st.line_chart(filtered_df.set_index("datetime")["energy_pred_kwh"])
 
-st.markdown("### 💧 Water Prediction (Random Forest)")
+st.markdown("### 💧 Water Prediction")
 st.line_chart(filtered_df.set_index("datetime")["water_pred_volume"])
 
 st.markdown("### 🌍 GHG Prediction")
