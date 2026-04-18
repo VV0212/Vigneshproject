@@ -5,6 +5,11 @@ import pandas as pd
 # LOAD DATA
 # -------------------------
 df = pd.read_csv("https://raw.githubusercontent.com/VV0212/Vigneshproject/main/data.csv")
+
+# FIX COLUMN NAMES (VERY IMPORTANT)
+df.columns = df.columns.str.strip().str.lower()
+
+# Convert datetime
 df["datetime"] = pd.to_datetime(df["datetime"])
 
 # -------------------------
@@ -25,7 +30,6 @@ filtered_df = df[
 # TITLE
 # -------------------------
 st.title("🏭 Industrial Sustainability Dashboard")
-
 st.markdown("### ⚡ Energy | 💧 Water | 🌍 GHG Monitoring System")
 
 # -------------------------
