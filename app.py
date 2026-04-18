@@ -32,7 +32,7 @@ df["date"] = df["datetime"].dt.date
 min_date = df["date"].min()
 max_date = df["date"].max()
 
-# Initialize session state (ONLY FIRST TIME)
+# Session state init
 if "start_date" not in st.session_state:
     st.session_state.start_date = min_date
 
@@ -46,25 +46,18 @@ with st.sidebar.form("filter_form"):
 
     submit = st.form_submit_button("Apply Filter")
 
-# When button clicked → SAVE state
+# Update session state
 if submit:
     st.session_state.start_date = start_date
     st.session_state.end_date = end_date
 
-# ALWAYS USE SESSION STATE (this is the key fix)
+# Apply filter ALWAYS
 filtered_df = df[
     (df["date"] >= st.session_state.start_date) &
     (df["date"] <= st.session_state.end_date)
 ].copy()
 
 filtered_df = filtered_df.sort_values(by="datetime")
-
-# Apply only when button clicked
-if apply_filter:
-    filtered_df = df[
-        (df["date"] >= start_date) &
-        (df["date"] <= end_date)
-    ].copy()
 
 # Always sort
 filtered_df = filtered_df.sort_values(by="datetime")
