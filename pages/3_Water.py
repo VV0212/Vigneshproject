@@ -1,13 +1,21 @@
 import streamlit as st
-import numpy as np
-import matplotlib.pyplot as plt
+import pandas as pd
 
-st.title("💧 Water Prediction (Random Forest)")
+st.title("💧 Water Dashboard")
 
-water = np.load("water_rf_predictions.npy")
+# Load data
+df = pd.read_csv("data.csv")
 
-st.metric("Latest Water", f"{water[0]:.2f} m³")
+water = df["water_pred"]
 
-fig, ax = plt.subplots()
-ax.plot(water)
-st.pyplot(fig)
+# Summary
+st.subheader("Water Summary")
+st.write(water.describe())
+
+# Data preview
+st.subheader("Water Data")
+st.dataframe(water.head(20))
+
+# Trend chart
+st.subheader("Water Trend")
+st.line_chart(water)
