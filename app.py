@@ -27,21 +27,23 @@ df = load_data()
 # -------------------- SIDEBAR FILTER --------------------
 st.sidebar.header("📅 Filter")
 
-min_date = df["datetime"].min().date()
-max_date = df["datetime"].max().date()
+# Convert to DATE (not datetime)
+df["date"] = df["datetime"].dt.date
+
+min_date = df["date"].min()
+max_date = df["date"].max()
 
 start_date = st.sidebar.date_input("Start Date", min_date)
 end_date = st.sidebar.date_input("End Date", max_date)
 
-# ✅ CRITICAL FIX (date → datetime)
-start_date = pd.to_datetime(start_date)
-end_date = pd.to_datetime(end_date) + pd.Timedelta(days=1)
-
-# Apply filter
+# Apply filter using DATE (not datetime)
 filtered_df = df[
-    (df["datetime"] >= start_date) &
-    (df["datetime"] < end_date)
+    (df["date"] >= start_date) &
+    (df["date"] <= end_date)
 ].copy()
+
+# IMPORTANT: sort again
+filtered_df = filtered_df.sort_values(by="datetime")
 
 # -------------------- DEBUG (REMOVE LATER) --------------------
 # st.write("Filtered rows:", len(filtered_df))
