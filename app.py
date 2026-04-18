@@ -27,20 +27,29 @@ df = load_data()
 # -------------------- SIDEBAR FILTER --------------------
 st.sidebar.header("📅 Filter")
 
-# Convert to DATE (not datetime)
 df["date"] = df["datetime"].dt.date
 
 min_date = df["date"].min()
 max_date = df["date"].max()
 
-start_date = st.sidebar.date_input("Start Date", min_date)
-end_date = st.sidebar.date_input("End Date", max_date)
+with st.sidebar.form("filter_form"):
+    start_date = st.date_input("Start Date", min_date)
+    end_date = st.date_input("End Date", max_date)
 
-# Apply filter using DATE (not datetime)
-filtered_df = df[
-    (df["date"] >= start_date) &
-    (df["date"] <= end_date)
-].copy()
+    apply_filter = st.form_submit_button("Apply Filter")
+
+# Default → show full data
+filtered_df = df.copy()
+
+# Apply only when button clicked
+if apply_filter:
+    filtered_df = df[
+        (df["date"] >= start_date) &
+        (df["date"] <= end_date)
+    ].copy()
+
+# Always sort
+filtered_df = filtered_df.sort_values(by="datetime")
 
 # IMPORTANT: sort again
 filtered_df = filtered_df.sort_values(by="datetime")
