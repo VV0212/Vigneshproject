@@ -1,21 +1,30 @@
 import streamlit as st
-import numpy as np
+import pandas as pd
 
 st.title("🌍 GHG & KPI Dashboard")
 
-energy = np.load("energy_mlp_predictions.npy")
-water = np.load("water_rf_predictions.npy")
+# Load data
+df = pd.read_csv("data.csv")
 
-ghg = energy * 0.48
+energy = df["energy_pred"]
+ghg = df["ghg_pred"]
 
-water_intensity = water / energy
-energy_intensity = energy / water
-ghg_intensity = ghg / energy
+# KPIs
+st.subheader("Key Metrics")
 
-st.subheader("KPIs")
+col1, col2 = st.columns(2)
 
-col1, col2, col3 = st.columns(3)
+col1.metric("Total Energy (kWh)", round(energy.sum(), 2))
+col2.metric("Total GHG (kg CO2)", round(ghg.sum(), 2))
 
-col1.metric("Water Intensity", f"{water_intensity[0]:.4f}")
-col2.metric("Energy Intensity", f"{energy_intensity[0]:.4f}")
-col3.metric("GHG Intensity", f"{ghg_intensity[0]:.4f}")
+# Summary
+st.subheader("GHG Summary")
+st.write(ghg.describe())
+
+# Data preview
+st.subheader("GHG Data")
+st.dataframe(ghg.head(20))
+
+# Trend chart
+st.subheader("GHG Trend")
+st.line_chart(ghg)
