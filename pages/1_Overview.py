@@ -1,21 +1,25 @@
 import streamlit as st
-import numpy as np
 import pandas as pd
 
 st.title("📊 Overview Dashboard")
 
-energy = np.load("energy_mlp_predictions.npy")
-water = np.load("water_rf_predictions.npy")
+# Load data
+df = pd.read_csv("data.csv")
 
-ghg = energy * 0.48
+energy = df["energy_pred"]
+water = df["water_pred"]
+ghg = df["ghg_pred"]
 
-df = pd.DataFrame({
+# Create dataframe
+df_display = pd.DataFrame({
     "Energy (kWh)": energy,
     "Water (m³)": water,
-    "GHG (kg CO₂)": ghg
+    "GHG (kg CO2)": ghg
 })
 
 st.subheader("Summary")
-st.write(df.describe())
+st.write(df_display.describe())
+
+st.dataframe(df_display.head(20))
 
 st.dataframe(df.head(20))
