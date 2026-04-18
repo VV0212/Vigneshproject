@@ -8,26 +8,43 @@ st.set_page_config(page_title="Sustainability Dashboard", layout="wide")
 st.title("🌍 Sustainability Dashboard")
 
 # -------------------- LOAD DATA --------------------
-url = "https://raw.githubusercontent.com/VV0212/Vigneshproject/main/data.csv"
-df = pd.read_csv(url)
+@st.cache_data
+def load_data():
+    url = "https://raw.githubusercontent.com/VV0212/Vigneshproject/main/data.csv"
+    df = pd.read_csv(url)
+    df["datetime"] = pd.to_datetime(df["datetime"])
+    df = df.sort_values(by="datetime")
 
-# Convert datetime
-df["datetime"] = pd.to_datetime(df["datetime"])
+    # Create smooth columns
+    df["energy_smooth"] = df["energy_pred"].rolling(window=5).mean()
+    df["water_smooth"] = df["water_pred"].rolling(window=5).mean()
+    df["ghg_smooth"] = df["ghg_pred"].rolling(window=5).mean()
+
+    return df
+
+df = load_data()
 
 # -------------------- SIDEBAR FILTER --------------------
 st.sidebar.header("📅 Filter")
 
-start_date = st.sidebar.date_input("Start Date", df["datetime"].min())
-end_date = st.sidebar.date_input("End Date", df["datetime"].max())
+min_date = df["datetime"].min().date()
+max_date = df["datetime"].max().date()
+
+start_date = st.sidebar.date_input("Start Date", min_date)
+end_date = st.sidebar.date_input("End Date", max_date)
+
+# ✅ CRITICAL FIX (date → datetime)
+start_date = pd.to_datetime(start_date)
+end_date = pd.to_datetime(end_date) + pd.Timedelta(days=1)
 
 # Apply filter
 filtered_df = df[
-    (df["datetime"] >= pd.to_datetime(start_date)) &
-    (df["datetime"] <= pd.to_datetime(end_date))
+    (df["datetime"] >= start_date) &
+    (df["datetime"] < end_date)
 ].copy()
 
-# SORT (IMPORTANT FIX)
-filtered_df = filtered_df.sort_values(by="datetime")
+# -------------------- DEBUG (REMOVE LATER) --------------------
+# st.write("Filtered rows:", len(filtered_df))
 
 # -------------------- KPI METRICS --------------------
 st.subheader("📊 Key Metrics")
@@ -39,55 +56,34 @@ col2.metric("Total Water (m³)", round(filtered_df["water_pred"].sum(), 2))
 col3.metric("Total GHG (kg CO2)", round(filtered_df["ghg_pred"].sum(), 2))
 
 # -------------------- ENERGY GRAPH --------------------
-st.subheader("⚡ Energy: Actual vs Predicted")
+st.subheader("⚡ Energy: Predicted vs Smooth Trend")
 
 fig_energy = px.line(
     filtered_df,
     x="datetime",
-    y=["energy_actual", "energy_pred"],
-    labels={"value": "Energy (kWh)", "variable": "Legend"},
-)
-
-fig_energy.update_layout(
-    xaxis_title="Date",
-    yaxis_title="Energy (kWh)",
-    legend_title=""
+    y=["energy_pred", "energy_smooth"],
 )
 
 st.plotly_chart(fig_energy, use_container_width=True)
 
 # -------------------- WATER GRAPH --------------------
-st.subheader("💧 Water: Actual vs Predicted")
+st.subheader("💧 Water: Predicted vs Smooth Trend")
 
 fig_water = px.line(
     filtered_df,
     x="datetime",
-    y=["water_actual", "water_pred"],
-    labels={"value": "Water (m³)", "variable": "Legend"},
-)
-
-fig_water.update_layout(
-    xaxis_title="Date",
-    yaxis_title="Water (m³)",
-    legend_title=""
+    y=["water_pred", "water_smooth"],
 )
 
 st.plotly_chart(fig_water, use_container_width=True)
 
 # -------------------- GHG GRAPH --------------------
-st.subheader("🌍 GHG: Actual vs Predicted")
+st.subheader("🌍 GHG: Predicted vs Smooth Trend")
 
 fig_ghg = px.line(
     filtered_df,
     x="datetime",
-    y=["ghg_actual", "ghg_pred"],
-    labels={"value": "GHG (kg CO2)", "variable": "Legend"},
-)
-
-fig_ghg.update_layout(
-    xaxis_title="Date",
-    yaxis_title="GHG (kg CO2)",
-    legend_title=""
+    y=["ghg_pred", "ghg_smooth"],
 )
 
 st.plotly_chart(fig_ghg, use_container_width=True)
