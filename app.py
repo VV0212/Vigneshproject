@@ -29,7 +29,7 @@ filtered_df = df[
 # -------------------------
 # TITLE
 # -------------------------
-st.title("🏭 Industrial Sustainability Dashboard")
+st.title("🏭 Sustainability Dashboard")
 st.markdown("### ⚡ Energy | 💧 Water | 🌍 GHG Emission")
 
 # -------------------------
