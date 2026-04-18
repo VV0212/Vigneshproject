@@ -30,7 +30,7 @@ filtered_df = df[
 # TITLE
 # -------------------------
 st.title("🏭 Industrial Sustainability Dashboard")
-st.markdown("### ⚡ Energy | 💧 Water | 🌍 GHG Emission)
+st.markdown("### ⚡ Energy | 💧 Water | 🌍 GHG Emission")
 
 # -------------------------
 # KPI - PREDICTIONS
