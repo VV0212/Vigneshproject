@@ -44,19 +44,6 @@ col2.metric("💧 Water (m³)", round(filtered_df["water_pred_volume"].mean(), 2
 col3.metric("🌍 GHG (kg CO₂)", round(filtered_df["ghg_pred_kg_co2e"].mean(), 2))
 
 # -------------------------
-# KPI - INTENSITY
-# -------------------------
-st.subheader("📊 Intensity Metrics")
-
-col4, col5, col6 = st.columns(3)
-
-col4.metric("⚡ Energy Intensity", round(filtered_df["energy_intensity_kwh_per_unit"].mean(), 2))
-col5.metric("💧 Water Intensity", round(filtered_df["water_intensity_volume_per_unit"].mean(), 2))
-col6.metric("🌍 GHG Intensity", round(filtered_df["ghg_intensity_kg_co2e_per_unit"].mean(), 2))
-
-st.divider()
-
-# -------------------------
 # PREDICTION GRAPHS
 # -------------------------
 st.subheader("📈 Prediction Trends")
