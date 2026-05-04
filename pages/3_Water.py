@@ -3,19 +3,25 @@ import pandas as pd
 
 st.title("💧 Water Dashboard")
 
-# Load data
 df = pd.read_csv("data.csv")
+df.columns = df.columns.str.strip().str.lower()
+df["datetime"] = pd.to_datetime(df["datetime"])
 
-water = df["water_pred"]
+start_date = st.sidebar.date_input("Start Date")
+end_date = st.sidebar.date_input("End Date")
 
-# Summary
+filtered_df = df[
+    (df["datetime"] >= pd.to_datetime(start_date)) &
+    (df["datetime"] <= pd.to_datetime(end_date))
+]
+
+water = filtered_df["water_intensity_volume_per_unit"]
+
 st.subheader("Water Summary")
 st.write(water.describe())
 
-# Data preview
 st.subheader("Water Data")
 st.dataframe(water.head(20))
 
-# Trend chart
 st.subheader("Water Trend")
-st.line_chart(water)
+st.line_chart(filtered_df.set_index("datetime")["water_intensity_volume_per_unit"])
