@@ -3,19 +3,29 @@ import pandas as pd
 
 st.title("⚡ Energy Dashboard")
 
-# Load data
 df = pd.read_csv("data.csv")
+df.columns = df.columns.str.strip().str.lower()
+df["datetime"] = pd.to_datetime(df["datetime"])
 
-energy = df["energy_pred"]
+# Filters (same as main)
+start_date = st.sidebar.date_input("Start Date")
+end_date = st.sidebar.date_input("End Date")
 
-# Show summary
+filtered_df = df[
+    (df["datetime"] >= pd.to_datetime(start_date)) &
+    (df["datetime"] <= pd.to_datetime(end_date))
+]
+
+energy = filtered_df["energy_intensity_kwh_per_unit"]
+
+# Summary
 st.subheader("Energy Summary")
 st.write(energy.describe())
 
-# Show data
+# Data
 st.subheader("Energy Data")
 st.dataframe(energy.head(20))
 
-# Optional: Line chart
+# Chart
 st.subheader("Energy Trend")
-st.line_chart(energy)
+st.line_chart(filtered_df.set_index("datetime")["energy_intensity_kwh_per_unit"])
