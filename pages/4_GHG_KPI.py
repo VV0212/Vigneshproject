@@ -1,30 +1,27 @@
 import streamlit as st
 import pandas as pd
 
-st.title("🌍 GHG & KPI Dashboard")
+st.title("🌍 GHG Dashboard")
 
-# Load data
 df = pd.read_csv("data.csv")
+df.columns = df.columns.str.strip().str.lower()
+df["datetime"] = pd.to_datetime(df["datetime"])
 
-energy = df["energy_pred"]
-ghg = df["ghg_pred"]
+start_date = st.sidebar.date_input("Start Date")
+end_date = st.sidebar.date_input("End Date")
 
-# KPIs
-st.subheader("Key Metrics")
+filtered_df = df[
+    (df["datetime"] >= pd.to_datetime(start_date)) &
+    (df["datetime"] <= pd.to_datetime(end_date))
+]
 
-col1, col2 = st.columns(2)
+ghg = filtered_df["ghg_intensity_kg_co2e_per_unit"]
 
-col1.metric("Total Energy (kWh)", round(energy.sum(), 2))
-col2.metric("Total GHG (kg CO2)", round(ghg.sum(), 2))
-
-# Summary
 st.subheader("GHG Summary")
 st.write(ghg.describe())
 
-# Data preview
 st.subheader("GHG Data")
 st.dataframe(ghg.head(20))
 
-# Trend chart
 st.subheader("GHG Trend")
-st.line_chart(ghg)
+st.line_chart(filtered_df.set_index("datetime")["ghg_intensity_kg_co2e_per_unit"])
