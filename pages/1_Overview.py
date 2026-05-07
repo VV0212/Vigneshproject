@@ -9,46 +9,30 @@ df = pd.read_csv("data.csv")
 # Clean column names
 df.columns = df.columns.str.strip().str.lower()
 
-# DEBUG: show all available columns
-st.write("Available Columns:", df.columns.tolist())
+# KPI columns
+energy = df["energy_pred_kwh"]
+water = df["water_pred_volume"]
+ghg = df["ghg_pred_kg_co2e"]
 
-# Assign columns
-energy = df["energy_intensity_kwh_per_unit"]
-water = df["water_intensity_volume_per_unit"]
-
-# Try possible GHG column names
-if "ghg_intensity_kgco2_per_unit" in df.columns:
-    ghg = df["ghg_intensity_kgco2_per_unit"]
-
-elif "ghg_emissions_kgco2_per_unit" in df.columns:
-    ghg = df["ghg_emissions_kgco2_per_unit"]
-
-elif "ghg_pred" in df.columns:
-    ghg = df["ghg_pred"]
-
-else:
-    st.error("GHG column not found in data.csv")
-    st.stop()
-
-# KPI Cards
+# KPI cards
 col1, col2, col3 = st.columns(3)
 
 col1.metric(
-    "⚡ Energy",
+    "⚡ Energy (kWh)",
     f"{energy.iloc[-1]:.2f}"
 )
 
 col2.metric(
-    "💧 Water",
+    "💧 Water (m³)",
     f"{water.iloc[-1]:.2f}"
 )
 
 col3.metric(
-    "🌍 GHG",
+    "🌍 GHG (kg CO2e)",
     f"{ghg.iloc[-1]:.2f}"
 )
 
-# Trends
+# Trend chart
 st.subheader("Prediction Trends")
 
 chart_df = pd.DataFrame({
